@@ -108,7 +108,9 @@ int cpe_get_igd_ms_connectionrequesturl(cwmp_t * cwmp, const char * name, char *
 {
     char buf[256]={0};
     char local_ip[32]={0};
-    cpe_get_localip("eth2.46", local_ip);
+    char * interface;
+    interface = cwmp_conf_pool_get(pool, "cwmp:wan_device");
+    cpe_get_localip(interface, local_ip);
     int port = cwmp_conf_get_int("cwmpd:httpd_port");
     snprintf(buf, 256, "http://%s:%d", local_ip, port);
     *value = PSTRDUP(buf);
@@ -142,4 +144,17 @@ int cpe_set_igd_ms_connectionrequestpassword(cwmp_t * cwmp, const char * name, c
 }
 
 
+
+//InternetGatewayDevice.ManagementServer.ConnectionRequestURL
+int cpe_get_igd_ExternalIPAddress(cwmp_t * cwmp, const char * name, char ** value, pool_t * pool)
+{
+    char * interface;
+    char buf[256]={0};
+    char local_ip[32]={0};
+    interface = cwmp_conf_pool_get(pool, "cwmp:wan_device");
+    cpe_get_localip(interface, local_ip);
+    snprintf(buf, 32, "%s", local_ip);
+    *value = PSTRDUP(buf);
+    return FAULT_CODE_OK;
+}
 

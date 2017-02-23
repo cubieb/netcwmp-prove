@@ -96,7 +96,7 @@ struct http_parser_t
 
 };
 
-
+/*
 struct http_digest_auth_t
 {
 	int		active; //digest auth
@@ -133,7 +133,7 @@ struct http_dest_t
 
 
 };
-
+*/
 
 struct http_socket_t
 {

@@ -12,7 +12,7 @@
 
 #ifndef __CWMPHTTP_H__
 #define __CWMPHTTP_H__
-
+#include <stdbool.h>
 #include <cwmp/types.h>
 #include <cwmp/cwmp.h>
 #include <cwmp/buffer.h>
@@ -40,15 +40,20 @@
 #define HTTPP_VAR_ERROR_CODE    "__errorcode__"
 #define HTTPP_VAR_PASSWORD      "__password__"
 
-#define HTTP_NONE_AUTH      0x00
-#define HTTP_BASIC_AUTH     0x01
-#define HTTP_DIGEST_AUTH    0x02
+enum http_auth_type {
+	HTTP_NONE_AUTH	= 0x00,
+	HTTP_BASIC_AUTH	= 0x01,
+	HTTP_DIGEST_AUTH = 0x02,
+};
 
 
 
 #define HTTP_100		100
 #define HTTP_200		200
+#define HTTP_204		204
 #define HTTP_400		400
+#define HTTP_401		401
+#define HTTP_407		407
 
 
 
@@ -82,6 +87,56 @@ typedef struct http_digest_auth_t   http_digest_auth_t;
 
 typedef size_t (*http_write_callback_pt)(char *data, size_t size, size_t nmemb, void * calldata);
 
+struct http_digest_auth_t
+{
+	int		active; //digest auth
+	enum http_auth_type type;
+	 /* CDRouter will test largest size ConnectionRequest Username */
+	char	username[URL_USER_LEN+1];
+	char	password[URL_PWD_LEN+1];
+
+	char 	realm[MIN_DEFAULT_LEN+1];
+    char    uri[MIN_DEFAULT_LEN*4+1];
+
+	char 	nonce[MIN_DEFAULT_LEN+1];
+	/* if qop field received,
+	 * then work on RFC 2069
+	 * (without qop, cnonce and nc fields)
+	 */
+	bool rfc2617;
+	char    qop[MIN_DEFAULT_LEN+1];
+	char 	cnonce[MIN_DEFAULT_LEN+1];
+	char    nc[MIN_DEFAULT_LEN+1];
+	char	nc_hex[9];
+	/* calculated response */
+	char    response[MIN_DEFAULT_LEN+1];
+	/* custom field, must be returned
+	 * to server, if defined
+	 */
+	char	opaque[128];
+};
+
+
+struct http_dest_t
+{
+    char	scheme[URL_SCHEME_LEN+1];
+    char	host[MAX_HOST_NAME_LEN+1];
+    char    uri[MAX_URI_LEN + 1];
+
+    int     port;
+    char*   url;
+
+    const char *    proxy_name;
+    const char *    proxy_auth;
+    const char *	user_agent;
+    int             proxy_port;
+
+    int             auth_type;
+    char    cookie[MIN_BUFFER_LEN+1];
+    http_digest_auth_t auth;
+
+
+};
 
 
 struct http_request_t

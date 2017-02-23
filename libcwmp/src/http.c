@@ -517,7 +517,7 @@ int http_parse_url(http_dest_t * dest, const char * url)
         for (q = uri, i = 0; (*q != ':') && (*q != '@'); q++)
             if (i < URL_USER_LEN)
             {
-                dest->user[i++] = *q;
+                dest->auth.username[i++] = *q;
             }
 
         /* password */
@@ -525,7 +525,7 @@ int http_parse_url(http_dest_t * dest, const char * url)
             for (q++, i = 0; (*q != ':') && (*q != '@'); q++)
                 if (i < URL_PWD_LEN)
                 {
-                    dest->password[i++] = *q;
+                    dest->auth.password[i++] = *q;
                 }
 
         p++;
@@ -617,7 +617,7 @@ nohost:
         "host:     [%s]\n"
         "port:     [%d]\n"
         "uri: [%s]\n",
-        dest->scheme, dest->user, dest->password,
+        dest->scheme, dest->auth.username, dest->auth.password,
         dest->host, dest->port, dest->uri);
 
 
@@ -1428,9 +1428,16 @@ int http_parse_digest_auth(const char * auth, http_digest_auth_t * digest_auth)
     for (s =  (char*)auth; isspace(*s); s++);
     strncpy(data, s, 511);
     s = data;
-    if (TRstrncasecmp(s, "digest", 6) != 0)
+    if (!strncasecmp(s, "Digest", 6)) {
+        digest_auth->type = HTTP_DIGEST_AUTH;
+        for (s += 6;  isspace(*s); s++);
+    } else if (!strncasecmp(s, "Basic", 5)) {
+        digest_auth->type = HTTP_BASIC_AUTH;
+        for (s += 5;  isspace(*s); s++);
+    } else {
+        cwmp_log_error("%s: unknown auth string: %s", __func__, auth);
         return -1;
-    for (s += 6;  isspace(*s); s++);
+    }
 
     end = s + strlen(s);
     memset(buffer, 128, 0);
@@ -1510,11 +1517,11 @@ int http_write_request(http_socket_t * sock , http_request_t * request, cwmp_chu
     {
          if((dest->auth.active == CWMP_FALSE) && (dest->auth_type == HTTP_DIGEST_AUTH))
         {
-            http_calc_digest_response(dest->user, dest->password,
+            http_calc_digest_response(dest->auth.username, dest->auth.password,
                     dest->auth.realm, dest->auth.nonce, dest->auth.uri, dest->auth.cnonce, dest->auth.nc, dest->auth.qop, dest->auth.response);
 
             len1 += TRsnprintf(buffer + len1, HTTP_DEFAULT_LEN - len1, auth_fmt,
-                            dest->user,
+                            dest->auth.username,
                             dest->auth.realm, dest->auth.nonce,
                             dest->auth.uri, dest->auth.response
                             //dest->auth.qop, dest->auth.nc, dest->auth.cnonce

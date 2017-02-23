@@ -22,8 +22,8 @@ model_func_t ModelFunction[] =
     {"cpe_set_igd_ms_connectionrequestusername", cpe_set_igd_ms_connectionrequestusername},
     {"cpe_set_igd_ms_connectionrequestpassword", cpe_set_igd_ms_connectionrequestpassword},
 
-
-	{"cpe_refresh_igd_wandevice", cpe_refresh_igd_wandevice},
+    {"cpe_get_igd_ExternalIPAddress", cpe_get_igd_ExternalIPAddress},
+    {"cpe_refresh_igd_wandevice", cpe_refresh_igd_wandevice},
     {"cpe_refresh_igd_wanconnectiondevice", cpe_refresh_igd_wanconnectiondevice},
     {"cpe_refresh_igd_wanipconnection", cpe_refresh_igd_wanipconnection},
 
